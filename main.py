@@ -2,6 +2,12 @@ import requests, sys, socket, subprocess
 from requests.exceptions import InvalidURL, ConnectionError
 import xml.etree.ElementTree as ET
 
+##########
+#Variable#
+##########
+
+VIDEOPLAYER_PATH = ""
+
 #########
 #Classes#
 #########
@@ -111,13 +117,6 @@ class mappa():
         for child in self.children:
             print(child.title)
 
-    # def get_parent(self, name):
-    #     for child in self.children:
-    #         if child.name == name:
-    #             return self
-    #         else:
-    #             child.get_parent(name)
-
     def return_level_of(self, name, level=0):
         if self.name == name:
             return level
@@ -190,24 +189,6 @@ def soap_req(Server, raw, data_binary=None, formated=True):
     Returns the response from the SOAP call, and if its the main ContentDir resp, then saves it to the Server class Object.
     """
 
-    # Handle optional args
-    # try:
-    #     data_binary = kwargs["data_binary"]
-    #     try:
-    #         with open(data_binary, "rb") as f:
-    #             data = f.read()
-    #     except FileNotFoundError:
-    #         print("File not Found\n")
-    #         exit()
-    # except KeyError:
-    #     data = None
-    # if data_binary is not None:
-    #     try:
-    #         with open(data_binary, "rb") as f:
-    #             data = f.read()
-    #     except FileNotFoundError:
-    #         print("File not Found\n")
-    #         exit()
     data = raw
     headers = {"Content-Type": "text/xml; charset=utf-8",
                "SOAPAction": "\"urn:schemas-upnp-org:service:ContentDirectory:1#Browse\""}
@@ -224,12 +205,6 @@ def soap_req(Server, raw, data_binary=None, formated=True):
 
     resp = r.content
 
-    # try:
-    #     if kwargs['formated']:
-    #         resp = str(resp).replace("&lt;", "<").replace(
-    #             "&gt;", ">").replace("\\r\\n", "")[2:-1]
-    # except KeyError:
-    #     pass
     if formated:
         resp = str(resp).replace("&lt;", "<").replace(
                 "&gt;", ">").replace("\\r\\n", "")[2:-1]
@@ -256,10 +231,7 @@ def soap_req(Server, raw, data_binary=None, formated=True):
 #     print("Updated data file to ", dirId)
 
 def update_data_file_open(dirId, raw):# datafile):
-
-    #with open(datafile, 'r+') as f:
-    #    raw = f.read()
-    
+ 
     newraw = ""
 
     for line in raw.split('\n'):
@@ -272,11 +244,7 @@ def update_data_file_open(dirId, raw):# datafile):
     
 
     return newraw
-    #with open(datafile, 'w+') as f:
-    #    f.write(newraw)
 
-
-#def parse_dir_resp(Server, **kwargs):
 def parse_dir_resp(Server, response=None, tree=None):
     """
     Parse the response from a Standard MiniDLNA server, returns the Main Dirs
@@ -292,18 +260,6 @@ def parse_dir_resp(Server, response=None, tree=None):
     if Server.contentDirResp is None:
         print("The Server cannot be reached")
         return
-    # try:
-    #     response = kwargs["response"]
-    # except KeyError:
-    #     if Server.contentDirResp == "":
-    #         print("The Server class Object, has to have an ContectDir response or it has to be included in `response`")
-    #         return
-    #     else:
-    #         resp = Server.contentDirResp
-
-    # if Server.contentDirResp is None:
-    #     print("The Server cannot be reached")
-    #     return
     if response is None:
         if Server.contentDirResp == "":
             print("The Server class Object, has to have an ContectDir response or it has to be included in `response`")
@@ -431,32 +387,14 @@ def main():
         for i, x in enumerate(actualmappa.children):
             print(f'{i+1}) {x.title}')
         inp = int(input("Choose a folder: ")) - 1
-        #print(mappasorrend)
         if inp == -1:
             actualmappa = mappasorrend[-1]
         else:
             if not actualmappa.children[inp].isfolder:
-                subprocess.run("C:\\Users\\theco\\Desktop\\mpv-x86_64-20181002\\mpv.exe " + actualmappa.children[inp].adat['res'])
+                subprocess.run(VIDEOPLAYER_PATH + actualmappa.children[inp].adat['res'])
             else:
                 mappasorrend.append(actualmappa)
                 actualmappa = actualmappa.children[inp]
-
-    #print(curServer.folders)
-    #curServer = Servers[int(input("Choose a server: "))-1]
-
-    # for i, objs in enumerate(curServer.folders):
-    #     parentname = [str(i)+str(x) for i, x in enumerate(objs['parentID'].split("$"))][-1]
-    #     myname = [str(i)+str(x) for i, x in enumerate(objs['id'].split("$"))][-1]
-    #     #print(parentname,myname,fomappa.add_child_to(mappa(objs,name=myname), parentname))
-    #     if fomappa.add_child_to(mappa(objs,name=myname), parentname) == 1001:
-    #         fomappa.add_child_to(mappa(objs,name=myname), "Root")
-        #print(f'{i+1}) {objs["title"]}')
-
-    #print(fomappa.return_level_of("Stranger Things S02"))
-
-        #print(Server.folders, str(Server.contents))
-    #curServer.save_cont_to_file("./asd.txt")
-
 
 if __name__ == "__main__":
     main()
